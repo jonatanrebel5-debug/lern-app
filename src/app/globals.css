@@ -1,0 +1,236 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ */
+/* Farben & Design-Tokens                                               */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --background: #f4f5fb;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --muted: #64748b;
+  --border: #e2e8f0;
+
+  /* Glas-Look */
+  --glass: rgba(255, 255, 255, 0.68);
+  --glass-strong: rgba(255, 255, 255, 0.86);
+  --glass-border: rgba(15, 23, 42, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.9);
+
+  /* Akzent für Glow-Effekte (RGB-Tripel) */
+  --glow: 99 102 241;
+
+  /* Hintergrund-Orbs */
+  --orb-1: rgba(129, 140, 248, 0.35);
+  --orb-2: rgba(192, 132, 252, 0.28);
+  --orb-3: rgba(56, 189, 248, 0.22);
+  --stardust-opacity: 0;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Animationen als Tailwind-Klassen: animate-card-in, animate-fade-up */
+  --animate-card-in: card-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @keyframes card-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b0b14;
+    --foreground: #f1f5f9;
+    --card: #161624;
+    --muted: #94a3b8;
+    --border: #262638;
+
+    --glass: rgba(22, 22, 36, 0.55);
+    --glass-strong: rgba(24, 24, 40, 0.78);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-highlight: rgba(255, 255, 255, 0.07);
+
+    --orb-1: rgba(99, 102, 241, 0.32);
+    --orb-2: rgba(168, 85, 247, 0.26);
+    --orb-3: rgba(14, 165, 233, 0.18);
+    --stardust-opacity: 0.45;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Grundlayout                                                          */
+/* ------------------------------------------------------------------ */
+
+html {
+  /* iOS: keine Schriftvergrößerung im Querformat, kein grauer Tap-Highlight */
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  overscroll-behavior-y: none;
+  /* eigener Stapelkontext, damit die Hintergrund-Ebenen sicher hinter dem Inhalt liegen */
+  isolation: isolate;
+}
+
+/* Abstände für Notch / Dynamic Island / Home-Indicator */
+.safe-top {
+  padding-top: max(env(safe-area-inset-top), 1rem);
+}
+.safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.75rem);
+}
+
+/* ------------------------------------------------------------------ */
+/* Animierter Hintergrund – nur transform/opacity (GPU), keine Layout-Arbeit */
+/* ------------------------------------------------------------------ */
+
+/* Ebene 1: weiche Glow-Orbs */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20%;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 32% at 18% 22%, var(--orb-1), transparent 70%),
+    radial-gradient(34% 30% at 82% 18%, var(--orb-2), transparent 70%),
+    radial-gradient(40% 36% at 55% 88%, var(--orb-3), transparent 70%);
+  filter: blur(40px);
+  will-change: transform;
+  animation: orbs-drift 28s ease-in-out infinite alternate;
+}
+
+/* Ebene 2: Sternenstaub (nur im Dunkelmodus sichtbar) */
+body::after {
+  content: "";
+  position: fixed;
+  inset: -10% 0 0 0;
+  height: 130vh;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--stardust-opacity);
+  background-image:
+    radial-gradient(1px 1px at 12px 18px, rgba(255, 255, 255, 0.9) 50%, transparent 51%),
+    radial-gradient(1px 1px at 86px 64px, rgba(255, 255, 255, 0.6) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 150px 30px, rgba(199, 210, 254, 0.8) 50%, transparent 51%),
+    radial-gradient(1px 1px at 200px 140px, rgba(255, 255, 255, 0.5) 50%, transparent 51%),
+    radial-gradient(1px 1px at 60px 190px, rgba(255, 255, 255, 0.7) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 230px 210px, rgba(221, 214, 254, 0.7) 50%, transparent 51%),
+    radial-gradient(1px 1px at 120px 110px, rgba(255, 255, 255, 0.4) 50%, transparent 51%);
+  background-size: 260px 260px;
+  will-change: transform;
+  animation: stardust-drift 90s linear infinite;
+}
+
+@keyframes orbs-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(4%, 3%, 0) scale(1.08);
+  }
+}
+
+@keyframes stardust-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, -260px, 0);
+  }
+}
+
+/* Bedienungshilfe "Bewegung reduzieren": Hintergrund steht still, keine Einblend-Animationen */
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Eigene Utilities                                                     */
+/* ------------------------------------------------------------------ */
+
+/* Glas-Oberfläche für Kacheln, Listen, Karten */
+@utility glass {
+  background-color: var(--glass);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-highlight),
+    0 8px 24px -16px rgba(0, 0, 0, 0.35);
+}
+
+/* Kräftigeres Glas für Karteikarten und die Navigation (bessere Lesbarkeit) */
+@utility glass-strong {
+  background-color: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-highlight),
+    0 20px 50px -24px rgba(0, 0, 0, 0.5);
+}
+
+/* Taktile Rückmeldung: weiches Eindrücken beim Tippen, dezenter Glow beim Hover (nur mit Maus) */
+@utility tap {
+  transition:
+    transform 0.16s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+  &:active {
+    transform: scale(0.95);
+  }
+  @media (hover: hover) {
+    &:hover {
+      border-color: rgb(var(--glow) / 0.35);
+      box-shadow:
+        inset 0 1px 0 0 var(--glass-highlight),
+        0 0 0 1px rgb(var(--glow) / 0.15),
+        0 10px 32px -10px rgb(var(--glow) / 0.45);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+/* Leuchtender Akzent-Rand für Hero-Flächen */
+@utility glow-ring {
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.25),
+    0 0 0 1px rgb(var(--glow) / 0.25),
+    0 18px 48px -16px rgb(var(--glow) / 0.65);
+}
